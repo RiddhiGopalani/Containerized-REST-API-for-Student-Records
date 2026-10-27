@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+data
+docs
+screenshots
+*.md
+*.docx
+*.pptx
+Dockerfile
+.dockerignore
