@@ -190,12 +190,51 @@ python scripts/smoke_test.py --recreate
 
 ## Troubleshooting Notes
 
-Points 1–4 and 6 are problems we actually ran into during the practical; points 5 and 7 are precautions we took to avoid common issues.
+Points 1–5 and 7 are problems we actually ran into during the practical; points 6 and 8 are precautions we took to avoid common issues.
 
 1. **Docker engine not running** – `docker info` failed with `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`. The Docker CLI was installed but Docker Desktop was not started. **Fix:** start Docker Desktop and wait until the engine shows as running.
 2. **Slow first image build** – the first `docker build` took about 3 minutes because pip downloaded packages slowly. **Fix:** `requirements.txt` is copied and installed before the app code in the Dockerfile, so Docker caches that layer and later builds take only a few seconds.
 3. **Git Bash changes container paths** – `docker exec student-api ls /app/data` in Git Bash failed with `cannot access 'C:/Program Files/Git/app/data'`, because Git Bash converts Linux-style paths to Windows paths. **Fix:** run the command in PowerShell, or prefix it with `MSYS_NO_PATHCONV=1` in Git Bash.
 4. **PowerShell strips inner quotes** – `docker exec student-api python -c "...'...'..."` failed with a Python `SyntaxError` because PowerShell removed the nested quotes before passing them to Docker. **Fix:** avoid nested quotes in PowerShell (or run such commands from Git Bash / a script file).
-5. **Port 8000 already in use** – the local Uvicorn server and the container both use port 8000. **Fix:** stop the local server (Ctrl+C) before running the container, or map a different host port, e.g. `-p 8080:8000`.
-6. **Pytest DeprecationWarning** – pytest shows one warning from inside the Starlette/AnyIO libraries. It comes from the library, not from our code, and does not affect the results.
-7. **Server not reachable from outside the container** – Uvicorn must listen on `0.0.0.0` inside the container (not `127.0.0.1`), otherwise the published port does not work. This is set in the Dockerfile `CMD`.
+5. **Wrong fields in the first POST request** – our first request from Swagger sent an `age` field and left out `roll_no` and `email`, so the API returned `422 Unprocessable Entity` with "Field required" (screenshot 4). **Fix:** send all four required fields; extra fields such as `age` are ignored.
+6. **Port 8000 already in use** – the local Uvicorn server and the container both use port 8000. **Fix:** stop the local server (Ctrl+C) before running the container, or map a different host port, e.g. `-p 8080:8000`.
+7. **Pytest DeprecationWarning** – pytest shows one warning from inside the Starlette/AnyIO libraries. It comes from the library, not from our code, and does not affect the results.
+8. **Server not reachable from outside the container** – Uvicorn must listen on `0.0.0.0` inside the container (not `127.0.0.1`), otherwise the published port does not work. This is set in the Dockerfile `CMD`.
+
+## Screenshots
+
+| # | Screenshot | Shows |
+|---|---|---|
+| 1 | [1.png](screenshots/1.png) | Uvicorn server running locally |
+| 2 | [2.png](screenshots/2.png) | Swagger docs at `/docs` with all six endpoints |
+| 3 | [3.png](screenshots/3.png) | `GET /students` – three sample records |
+| 4 | [4.png](screenshots/4.png) | Validation error – 422 for missing `roll_no` / `email` |
+| 5 | [5.png](screenshots/5.png) | `POST /students` – 201 Created |
+| 6 | [6.png](screenshots/6.png) | `PUT /students/4` – 200 OK |
+| 7 | [7.png](screenshots/7.png) | `GET /students/4` – updated record |
+| 8 | [8.png](screenshots/8.png) | `GET /students/99` – 404 Not Found |
+| 9 | [9.png](screenshots/9.png) | `docker build` – image built |
+| 10 | [10.png](screenshots/10.png) | `docker images` and `docker ps` – container running (healthy) |
+| 11 | [11.png](screenshots/11.png) | `POST /students` through the Docker port – 201 Created |
+| 12 | [12.png](screenshots/12.png) | `GET /students` through the Docker container |
+| 13 | [13.png](screenshots/13.png) | `docker logs student-api` |
+| 14 | [14.png](screenshots/14.png) | Lifecycle – stop, start, restart, rm, volume ls, run |
+| 15 | [15.png](screenshots/15.png) | Smoke test – 12/12 checks passed incl. recreation and persistence |
+
+![Swagger UI](screenshots/2.png)
+![Container lifecycle](screenshots/14.png)
+
+## Project Documents
+
+- [Project Report (Word)](docs/Activity9_Project_Report.docx)
+- [Presentation (PowerPoint)](docs/Activity9_Presentation.pptx)
+- [Architecture Diagram](docs/architecture.png)
+
+## Individual Contributions
+
+| Member | Roll No. | Contribution |
+|---|---|---|
+| Riddhi Gopalani | 34124 | GitHub repository and project setup, FastAPI endpoints, SQLite database layer, input validation, Docker volume persistence, final demonstration, screenshots and commits |
+| Om Mahajan | 34140 | Dockerfile, .dockerignore, port mapping and health check, image build, container lifecycle demonstration |
+| Sudhan Dabhade | 34118 | Pytest test cases, live smoke test script, test execution on host and container, troubleshooting notes |
+| Pratik Kalburgi | 34130 | Project report, presentation, architecture diagram, README documentation |
